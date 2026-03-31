@@ -1,0 +1,1 @@
+export const API_HOST = process.env.VITE_API_URL || '/api';
