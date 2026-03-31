@@ -15,56 +15,73 @@ A full-stack property listing platform built with **Django REST Framework** (bac
 ### Project Strucutre
 ```
 propertyhub/
-├── README.md                 ← root (rename from README.md)
+├── README.md                
 ├── backend/
-│   └── README.md             ← rename from backend-README.md
+│   └── README.md             
 └── frontend/
-    └── README.md             ← rename from frontend-
+    └── README.md            
 ```
 ## 📖 Documentation
  
 - [Backend README](./backend/README.md) — Django setup, models, API endpoints, authentication
 - [Frontend README](./frontend/README.md) — React setup, project structure, environment config
 
-# Project Checklist
+## Project Checklist
 
-## 1. Design and implement
+#### 1. Design and implement
 
-### a. Backend API
+##### a. Backend API
 - [x] `/listings` — search + filters: price range, beds, baths, property type, keyword
 - [x] `/listings/{id}` — property detail
 
-### b. Frontend
+##### b. Frontend
 - [x] Property search page with filters
 - [x] Results list (no map)
 - [x] Property detail page
 
 ---
 
-## 2. Relational DB (Postgres-style)
+#### 2. Relational DB (Postgres-style)
 - [x] Table for properties
 - [x] Table for agents
 - [x] Indexes that support common search patterns (price, suburb, type, etc.)
 
 ---
 
-## 3. Implement
+#### 3. Implement
 - [x] Basic role flag (`is_admin: boolean`) on the server
 - [x] Admins can see extra metadata (e.g., internal status notes) that normal users cannot
 
 ---
 
-## 4. Add
+#### 4. Add
 - [x] Pagination (offset- or cursor-based)
 - [x] URL-friendly search (e.g., `/listings?suburb=Northside&price_min=500000`)
 
 ---
 
-## 5. Deliver a clean, testable codebase
+#### 5. Deliver a clean, testable codebase
 - [x] At least 2–3 unit or integration tests (e.g., API endpoint tests or DB query tests)
 - [x] README: how to run the app
 - [x] README: how to seed the DB
 - [x] README: example API calls
+
+### Screenshot
+
+
+#### login page
+![Login page](./screenshot/login.png)
+
+#### Propety Listing page
+![Listing page](./screenshot/property_listing_view.png)
+
+#### Search Property result
+![Search listing page](./screenshot/search_with_keywords.png)
+
+#### login page
+![Property Detail User View](./screenshot/property_detail_normal_user.png)
+#### login page
+![Property Detail Admin View](./screenshot/property_detail_admin_view.png)
 
 ### TODOs
 - data seeder for agent done
