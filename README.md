@@ -96,6 +96,85 @@ propertyhub/
     - use axios
     - client header for auth request
     - store the token
-optional
-- dockerize
-- nginx setup 
+- optional
+    - dockerize
+    - nginx setup 
+
+---
+### GIN index and Trigrams notes for search result in postgreSQL
+
+#### What is Trigram
+
+A trigram is a group of three consecutive characters taken from a string. PostgreSQL user these to break down words into searchable chunks
+
+Example: The word "LUMOS"
+Postgres breaks "Lumos" into three 3-letter "keys"
+
+```l``` ```lu``` ```lum``` ```umo``` ```mos``` ```os```
+
+#### Why Trigrams are Magic:
+-  Fuzzy Matching: If a user searches for "Lumis", Postgres sees that ```lum``` and ```um``` still match. It calculates a Similarity Score (e.g., 60% match)
+- Partial Search: It can find ```"mos"``` inside ```"Lumos"``` instantly because ```"mos"``` is a pre indexed key
+
+---
+
+#### What is GIN Index
+
+GIN stands for Generalized Inverted Index.
+- Standard Index: Maps Row ID -> Full Title.
+- GIN Index: Maps Trigram Key -> List of Row IDs.
+
+**Back of the book Analogy:**
+
+- A GIN index is like index of the back of a textbook
+- You lookup word "Balcony".
+- The index immediately tells you: "Found on pages 12, 45, and 89."
+- You don't have to read the whole books to find where "Balcony" was mentioned.
+
+---
+
+#### Problem GIN and Trigrams solve
+
+The problem: "The Blind Librarian"
+
+Imagine a library (your Database) with 100,000 property listings.
+
+- Standard Index(B-Tree): Works like an alphabetical list of Titles. If you search for ```"Modern Apartment"```, it's fast. But if you search for ```"%Apartment%"```, the librarian has to read every single books cover one by one, This is called a **Full Table Scan** and it is slow.
+- The Typo Problem: If a user types ```"Apartmnt"```, a standard search finds zero result
+
+#### Disadvantages of GIN and Trigrams:
+
+**Summary Disadvantage**
+- slow write speed 
+- higher storage cost
+- poor performance short queries (1-2 letter searches)
+- higher memory requirements for the database server
+
+**Detailed Version**
+
+1. The "Heavy" write Penalty (Update Overhead)
+Every time you create or update a property, PostgreSQL has to 
+    1. Take the title,description.
+    2. break it into hundreds of 3-letter trigrams.
+    3. Update the GIN index tree for every single one of those trigrams.
+    - The Result: ```property.save()``` becomes significantly slower than a table without an index.
+    - Note: This is fine for a Property app (listing don't change every second), but terrible for a Chat app or Stock Ticker.
+2. Large Disk FootPrint(Storage Bloat)
+Because a GIN index stores a mapping of every 3-letter combination to every row ID, the index file can become huge.
+    - The Result: Sometimes the index hosting itself can be 50% to 100% the size of the actual table data.
+    - Note: If you are on a limited hosting plan (like a small AWS or DigitalOcean RDS), your Disk Usage will climb much faster.
+3. The Short Word Weakness
+Trigrams struggle with very short search terms(1 or 2 characters).
+    - The Problem: If a user searches for "UI", there is no 3-letter trigram to match.
+    - The Result: The GIN index can't help much here, and database might fallback to the slow scan or return irrelevant result. Trigrams perform best when the search term is 3 characters or longer
+4. Memory Intensity (RAM Usage)
+To keep search fast, PostgreSQL tries to load the "frequently used" parts of the GIN index into RAM (the Buffer Cache).
+    - The Problem: Because GIN indexes are large and complex, they take up a lot of "room" in your RAM.
+    - The Result: The Can "push out" other important data from you RAM, potentially slowing down other parts of your database the are'nt even related to searching.
+
+---
+
+#### Alternative of GIN and Trigrams
+- PostgreSQL Full Text Search(FTS)
+- Meilisearch 
+- Generalized Search Tree(GiST) index
