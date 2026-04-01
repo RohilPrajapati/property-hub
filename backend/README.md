@@ -42,6 +42,8 @@ Create a .env file in the root directory:
 ```
 SECRET_KEY = "<your-secret>"
 
+DEBUG=False
+
 DB_NAME="real_estate_db"
 DB_USER="<user_name>"
 DB_PASSWORD="<your_password>"
